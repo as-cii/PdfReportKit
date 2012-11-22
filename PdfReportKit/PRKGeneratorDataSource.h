@@ -12,8 +12,10 @@
 @protocol PRKGeneratorDataSource <NSObject>
 
 @required
-- (id)         reportsGenerator: (PRKGenerator *)generator dataForReport: (NSString *)reportName withTag: (NSString *)tagName;
-- (NSString *) reportsGenerator: (PRKGenerator *)generator templateForReportName: (NSString *)reportName withURLString: (NSString *)fileName;
+- (id)         reportsGenerator: (PRKGenerator *)generator dataForReport: (NSString *)reportName withTag: (NSString *)tagName forPage: (NSUInteger)pageNumber;
+
+@optional
+- (NSString *) reportsGenerator: (PRKGenerator *)generator templateURLStringForReportName: (NSString *)reportName;
 
 
 @end

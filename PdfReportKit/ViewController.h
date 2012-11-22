@@ -7,7 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "PRKGeneratorDataSource.h"
+#import "PRKGeneratorDelegate.h"
 
-@interface ViewController : UIViewController
+@interface ViewController : UIViewController<PRKGeneratorDataSource, PRKGeneratorDelegate>
+{
+    NSDictionary * defaultValues;
+}
+
 
 @end

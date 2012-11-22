@@ -21,6 +21,10 @@
 		A9250A3C165D0DCC007EEDA2 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A9250A3B165D0DCC007EEDA2 /* ViewController.m */; };
 		A9250A44165D0E0B007EEDA2 /* PRKGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = A9250A43165D0E0B007EEDA2 /* PRKGenerator.m */; };
 		A9250A4A165D1384007EEDA2 /* libGRMustache6-iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A9250A49165D1384007EEDA2 /* libGRMustache6-iOS.a */; };
+		A9250A56165D27E5007EEDA2 /* template1.mustache in Resources */ = {isa = PBXBuildFile; fileRef = A9250A55165D27E5007EEDA2 /* template1.mustache */; };
+		A9250A59165D2D36007EEDA2 /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = A9250A58165D2D36007EEDA2 /* Person.m */; };
+		A9250A5C165D3DA0007EEDA2 /* PRKPageRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = A9250A5B165D3DA0007EEDA2 /* PRKPageRenderer.m */; };
+		A9A5C6FB165E3623001B4AFE /* PRKRenderHtmlOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = A9A5C6FA165E3623001B4AFE /* PRKRenderHtmlOperation.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +50,14 @@
 		A9250A46165D0E5A007EEDA2 /* PRKGeneratorDataSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PRKGeneratorDataSource.h; sourceTree = "<group>"; };
 		A9250A48165D136E007EEDA2 /* GRMustache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GRMustache.h; path = GRMustache/include/GRMustache.h; sourceTree = SOURCE_ROOT; };
 		A9250A49165D1384007EEDA2 /* libGRMustache6-iOS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libGRMustache6-iOS.a"; path = "GRMustache/lib/libGRMustache6-iOS.a"; sourceTree = "<group>"; };
+		A9250A4B165D196D007EEDA2 /* PRKGeneratorDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PRKGeneratorDelegate.h; sourceTree = "<group>"; };
+		A9250A55165D27E5007EEDA2 /* template1.mustache */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = template1.mustache; sourceTree = "<group>"; };
+		A9250A57165D2D36007EEDA2 /* Person.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Person.h; sourceTree = "<group>"; };
+		A9250A58165D2D36007EEDA2 /* Person.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Person.m; sourceTree = "<group>"; };
+		A9250A5A165D3DA0007EEDA2 /* PRKPageRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PRKPageRenderer.h; sourceTree = "<group>"; };
+		A9250A5B165D3DA0007EEDA2 /* PRKPageRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PRKPageRenderer.m; sourceTree = "<group>"; };
+		A9A5C6F9165E3623001B4AFE /* PRKRenderHtmlOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PRKRenderHtmlOperation.h; sourceTree = "<group>"; };
+		A9A5C6FA165E3623001B4AFE /* PRKRenderHtmlOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PRKRenderHtmlOperation.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +115,9 @@
 				A9250A23165D0DCB007EEDA2 /* Supporting Files */,
 				A9250A47165D1330007EEDA2 /* GRMustache */,
 				A9250A45165D0E17007EEDA2 /* PRKLibrary */,
+				A9250A55165D27E5007EEDA2 /* template1.mustache */,
+				A9250A57165D2D36007EEDA2 /* Person.h */,
+				A9250A58165D2D36007EEDA2 /* Person.m */,
 			);
 			path = PdfReportKit;
 			sourceTree = "<group>";
@@ -127,6 +142,11 @@
 				A9250A42165D0E0B007EEDA2 /* PRKGenerator.h */,
 				A9250A43165D0E0B007EEDA2 /* PRKGenerator.m */,
 				A9250A46165D0E5A007EEDA2 /* PRKGeneratorDataSource.h */,
+				A9250A4B165D196D007EEDA2 /* PRKGeneratorDelegate.h */,
+				A9250A5A165D3DA0007EEDA2 /* PRKPageRenderer.h */,
+				A9250A5B165D3DA0007EEDA2 /* PRKPageRenderer.m */,
+				A9A5C6F9165E3623001B4AFE /* PRKRenderHtmlOperation.h */,
+				A9A5C6FA165E3623001B4AFE /* PRKRenderHtmlOperation.m */,
 			);
 			name = PRKLibrary;
 			sourceTree = "<group>";
@@ -196,6 +216,7 @@
 				A9250A33165D0DCC007EEDA2 /* Default-568h@2x.png in Resources */,
 				A9250A36165D0DCC007EEDA2 /* MainStoryboard_iPhone.storyboard in Resources */,
 				A9250A39165D0DCC007EEDA2 /* MainStoryboard_iPad.storyboard in Resources */,
+				A9250A56165D27E5007EEDA2 /* template1.mustache in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -210,6 +231,9 @@
 				A9250A2D165D0DCB007EEDA2 /* AppDelegate.m in Sources */,
 				A9250A3C165D0DCC007EEDA2 /* ViewController.m in Sources */,
 				A9250A44165D0E0B007EEDA2 /* PRKGenerator.m in Sources */,
+				A9250A59165D2D36007EEDA2 /* Person.m in Sources */,
+				A9250A5C165D3DA0007EEDA2 /* PRKPageRenderer.m in Sources */,
+				A9A5C6FB165E3623001B4AFE /* PRKRenderHtmlOperation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,6 +368,7 @@
 				A9250A41165D0DCC007EEDA2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
