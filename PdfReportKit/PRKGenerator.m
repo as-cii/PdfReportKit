@@ -50,9 +50,14 @@ static NSArray * reportDefaultTags = nil;
     return self;
 }
 
-- (void)createReportWithName:(NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage:(NSUInteger)itemsPerPage totalItems:(NSUInteger)totalItems pageOrientation:(PRKPageOrientation)orientation error:(NSError *__autoreleasing *)error
+- (void)createReportWithName:(NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage:(NSUInteger)itemsPerPage totalItems:(NSUInteger)totalItems pageOrientation:(PRKPageOrientation)orientation dataSource: (id<PRKGeneratorDataSource>)dataSource delegate: (id<PRKGeneratorDelegate>)delegate error:(NSError *__autoreleasing *)error;
 {
+    // TODO: replace and add report processing to queue
+    if (self.renderingQueue.operationCount > 0)
+        return;
     
+    self.dataSource = dataSource;
+    self.delegate = delegate;
     currentReportData = [NSMutableData data];
     GRMustacheTemplate * template = [GRMustacheTemplate templateFromContentsOfFile:templatePath error:error];
     if (*error)

@@ -51,16 +51,10 @@
         @"otherCompanyName" : @"Rossi Paolo s.r.l.",
         @"total"            : [NSString stringWithFormat: @"%f", total]
     };
-
     
-    PRKGenerator * generator = [PRKGenerator sharedGenerator];
-    generator.dataSource = self;
-    generator.delegate = self;
-    
-    NSError * error;
-    
+    NSError * error;    
     NSString * templatePath = [[NSBundle mainBundle] pathForResource:@"template1" ofType:@"mustache"];
-    [generator createReportWithName:@"template1" templateURLString:templatePath itemsPerPage:20 totalItems:articles.count pageOrientation:PRKLandscapePage error:&error];
+    [[PRKGenerator sharedGenerator] createReportWithName:@"template1" templateURLString:templatePath itemsPerPage:20 totalItems:articles.count pageOrientation:PRKLandscapePage dataSource:self delegate:self error:&error];
 }
 
 - (void)didReceiveMemoryWarning

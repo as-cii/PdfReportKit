@@ -38,7 +38,7 @@ typedef NS_ENUM(NSInteger, PRKPageOrientation) {
 @property (nonatomic, retain)   NSOperationQueue * renderingQueue;
 
 // Instance methods
-- (void) createReportWithName: (NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage: (NSUInteger)itemsPerPage totalItems: (NSUInteger)totalItems pageOrientation: (PRKPageOrientation)orientation error: (NSError **)error;
+- (void)createReportWithName:(NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage:(NSUInteger)itemsPerPage totalItems:(NSUInteger)totalItems pageOrientation:(PRKPageOrientation)orientation dataSource: (id<PRKGeneratorDataSource>)dataSource delegate: (id<PRKGeneratorDelegate>)delegate error:(NSError *__autoreleasing *)error;
 
 // Static methods
 + (PRKGenerator *) sharedGenerator;
