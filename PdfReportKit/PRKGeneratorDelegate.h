@@ -8,6 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
+@class PRKGenerator;
+
 @protocol PRKGeneratorDelegate <NSObject>
+
+- (void) reportsGenerator:(PRKGenerator *)generator didFinishRenderingWithData: (NSData *)data;
 
 @end

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A90C60F0165F720D006337D9 /* InvoiceItem.m in Sources */ = {isa = PBXBuildFile; fileRef = A90C60EE165F710C006337D9 /* InvoiceItem.m */; };
 		A9250A1D165D0DCB007EEDA2 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9250A1C165D0DCB007EEDA2 /* UIKit.framework */; };
 		A9250A1F165D0DCB007EEDA2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9250A1E165D0DCB007EEDA2 /* Foundation.framework */; };
 		A9250A21165D0DCB007EEDA2 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9250A20165D0DCB007EEDA2 /* CoreGraphics.framework */; };
@@ -25,9 +26,12 @@
 		A9250A59165D2D36007EEDA2 /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = A9250A58165D2D36007EEDA2 /* Person.m */; };
 		A9250A5C165D3DA0007EEDA2 /* PRKPageRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = A9250A5B165D3DA0007EEDA2 /* PRKPageRenderer.m */; };
 		A9A5C6FB165E3623001B4AFE /* PRKRenderHtmlOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = A9A5C6FA165E3623001B4AFE /* PRKRenderHtmlOperation.m */; };
+		A9A5C716165E8DAB001B4AFE /* PRKFakeRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = A9A5C715165E8DAB001B4AFE /* PRKFakeRenderer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A90C60ED165F710C006337D9 /* InvoiceItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InvoiceItem.h; sourceTree = "<group>"; };
+		A90C60EE165F710C006337D9 /* InvoiceItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InvoiceItem.m; sourceTree = "<group>"; };
 		A9250A18165D0DCB007EEDA2 /* PdfReportKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PdfReportKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9250A1C165D0DCB007EEDA2 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		A9250A1E165D0DCB007EEDA2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -58,6 +62,9 @@
 		A9250A5B165D3DA0007EEDA2 /* PRKPageRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PRKPageRenderer.m; sourceTree = "<group>"; };
 		A9A5C6F9165E3623001B4AFE /* PRKRenderHtmlOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PRKRenderHtmlOperation.h; sourceTree = "<group>"; };
 		A9A5C6FA165E3623001B4AFE /* PRKRenderHtmlOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PRKRenderHtmlOperation.m; sourceTree = "<group>"; };
+		A9A5C6FD165E773F001B4AFE /* PRKRenderHtmlOperationDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PRKRenderHtmlOperationDelegate.h; sourceTree = "<group>"; };
+		A9A5C714165E8DAB001B4AFE /* PRKFakeRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PRKFakeRenderer.h; sourceTree = "<group>"; };
+		A9A5C715165E8DAB001B4AFE /* PRKFakeRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PRKFakeRenderer.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +113,8 @@
 		A9250A22165D0DCB007EEDA2 /* PdfReportKit */ = {
 			isa = PBXGroup;
 			children = (
+				A90C60ED165F710C006337D9 /* InvoiceItem.h */,
+				A90C60EE165F710C006337D9 /* InvoiceItem.m */,
 				A9250A2B165D0DCB007EEDA2 /* AppDelegate.h */,
 				A9250A2C165D0DCB007EEDA2 /* AppDelegate.m */,
 				A9250A34165D0DCC007EEDA2 /* MainStoryboard_iPhone.storyboard */,
@@ -147,6 +156,9 @@
 				A9250A5B165D3DA0007EEDA2 /* PRKPageRenderer.m */,
 				A9A5C6F9165E3623001B4AFE /* PRKRenderHtmlOperation.h */,
 				A9A5C6FA165E3623001B4AFE /* PRKRenderHtmlOperation.m */,
+				A9A5C6FD165E773F001B4AFE /* PRKRenderHtmlOperationDelegate.h */,
+				A9A5C714165E8DAB001B4AFE /* PRKFakeRenderer.h */,
+				A9A5C715165E8DAB001B4AFE /* PRKFakeRenderer.m */,
 			);
 			name = PRKLibrary;
 			sourceTree = "<group>";
@@ -227,6 +239,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A90C60F0165F720D006337D9 /* InvoiceItem.m in Sources */,
 				A9250A29165D0DCB007EEDA2 /* main.m in Sources */,
 				A9250A2D165D0DCB007EEDA2 /* AppDelegate.m in Sources */,
 				A9250A3C165D0DCC007EEDA2 /* ViewController.m in Sources */,
@@ -234,6 +247,7 @@
 				A9250A59165D2D36007EEDA2 /* Person.m in Sources */,
 				A9250A5C165D3DA0007EEDA2 /* PRKPageRenderer.m in Sources */,
 				A9A5C6FB165E3623001B4AFE /* PRKRenderHtmlOperation.m in Sources */,
+				A9A5C716165E8DAB001B4AFE /* PRKFakeRenderer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

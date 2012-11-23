@@ -7,16 +7,22 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "PRKRenderHtmlOperationDelegate.h"
+
 
 @interface PRKRenderHtmlOperation : NSOperation<UIWebViewDelegate>
 {
-    NSString    * htmlSource;
-    UIWebView   * renderingWebView;
+    PRKSectionType      htmlSectionType;
+    NSString            * htmlSource;
+    UIWebView           * renderingWebView;
     
     BOOL executing;
     BOOL finished;
 }
 
-- (id) initWithHtmlContent: (NSString *)html;
+
+@property (nonatomic, weak) id<PRKRenderHtmlOperationDelegate> delegate;
+
+- (id) initWithHtmlContent: (NSString *)html andSectionType: (PRKSectionType)sectionType;
 
 @end

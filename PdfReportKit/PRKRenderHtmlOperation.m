@@ -7,15 +7,17 @@
 //
 
 #import "PRKRenderHtmlOperation.h"
+#import "PRKGenerator.h"
 
 @implementation PRKRenderHtmlOperation
 
-- (id)initWithHtmlContent:(NSString *)html
+- (id)initWithHtmlContent:(NSString *)html andSectionType: (PRKSectionType)sectionType
 {
     self = [super init];
     if (self)
-    {
+    {        
         htmlSource = html;
+        htmlSectionType = sectionType;
         
         renderingWebView = [[UIWebView alloc] init];
         renderingWebView.delegate = self;
@@ -26,37 +28,47 @@
 
 - (void)start
 {
-    [renderingWebView loadHTMLString:htmlSource baseURL:[NSURL URLWithString:@"localhost"]];    
     [self willChangeValueForKey:@"isExecuting"];
     executing = YES;
     [self didChangeValueForKey:@"isExecuting"];
+    
+    [renderingWebView loadHTMLString:htmlSource baseURL:[NSURL URLWithString:@"localhost"]];
 }
 
 - (BOOL)isConcurrent
 {
-    return YES;
+    return NO;
 }
 
 - (BOOL)isFinished
 {
-    return finished;
+    @synchronized(self)
+    {
+        return finished;
+    }
 }
 
 - (BOOL)isExecuting
 {
-    return executing;
+    @synchronized(self)
+    {
+        return executing;
+    }
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
+    webView.delegate = nil;
+    [self.delegate didFinishLoadingSection:htmlSectionType withPrintFormatter:renderingWebView.viewPrintFormatter];
     [self willChangeValueForKey:@"isFinished"];
+    finished = YES;
+    [self didChangeValueForKey:@"isFinished"];
+    
     [self willChangeValueForKey:@"isExecuting"];
     
     executing = NO;
-    finished = YES;
-    
     [self didChangeValueForKey:@"isExecuting"];
-    [self didChangeValueForKey:@"isFinished"];
+    
 }
 
 @end

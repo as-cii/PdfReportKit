@@ -10,18 +10,25 @@
 #import "PRKGeneratorDataSource.h"
 #import "PRKGeneratorDelegate.h"
 #import "GRMustache.h"
+#import "PRKRenderHtmlOperation.h"
 
-enum PRKPageSize
-{
-    PRKA4Page,
-    PRKA3Page
+typedef NS_ENUM(NSInteger, PRKPageOrientation) {
+    PRKPortraitPage,
+    PRKLandscapePage
 };
 
-@interface PRKGenerator : NSObject<PRKGeneratorDataSource>
+@interface PRKGenerator : NSObject<PRKGeneratorDataSource, PRKRenderHtmlOperationDelegate>
 {
-    NSString            * currentReportName;
-    NSUInteger            currentReportPage;
+    NSString        * currentReportName;
+    NSUInteger        currentReportPage;
+    NSUInteger        currentReportItemsPerPage;
+    NSMutableData          * currentReportData;
+    
     NSMutableDictionary * renderedTags;
+    
+    UIPrintFormatter    * headerFormatter;
+    UIPrintFormatter    * contentFormatter;
+    UIPrintFormatter    * footerFormatter;
 }
 
 
@@ -31,7 +38,7 @@ enum PRKPageSize
 @property (nonatomic, retain)   NSOperationQueue * renderingQueue;
 
 // Instance methods
-- (void) createReportWithName: (NSString *)reportName itemsPerPage: (NSUInteger)itemsPerPage error: (NSError **)error;
+- (void) createReportWithName: (NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage: (NSUInteger)itemsPerPage totalItems: (NSUInteger)totalItems pageOrientation: (PRKPageOrientation)orientation error: (NSError **)error;
 
 // Static methods
 + (PRKGenerator *) sharedGenerator;

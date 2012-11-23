@@ -14,8 +14,6 @@
 @required
 - (id)         reportsGenerator: (PRKGenerator *)generator dataForReport: (NSString *)reportName withTag: (NSString *)tagName forPage: (NSUInteger)pageNumber;
 
-@optional
-- (NSString *) reportsGenerator: (PRKGenerator *)generator templateURLStringForReportName: (NSString *)reportName;
 
 
 @end

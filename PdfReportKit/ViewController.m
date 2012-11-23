@@ -9,7 +9,7 @@
 #import "ViewController.h"
 #import "PRKGenerator.h"
 #import "PRKRenderHtmlOperation.h"
-#import "Person.h"
+#import "InvoiceItem.h"
 
 @interface ViewController ()
 
@@ -22,30 +22,45 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     
-    Person * p1 = [[Person alloc] init];
-    p1.name = @"Antonio";
-    
-    Person * p2 = [[Person alloc] init];
-    p2.name = @"Marco";
-    
-    Person * p3 = [[Person alloc] init];
-    p3.name = @"Luigi";
-    
-    Person * p4 = [[Person alloc] init];
-    p4.name = @"Andrea";
-    
+    double total = 0;
+    NSMutableArray * articles = [NSMutableArray array];
+    for (int i = 0; i < 200; i++) {
+        int element = i + 123456;
+        InvoiceItem * item = [[InvoiceItem alloc] init];
+        item.number = element;
+        NSDateFormatter * formatter = [[NSDateFormatter alloc] init];
+        formatter.dateFormat = @"dd/MM/yyyy";
+        
+        item.date = [formatter stringFromDate:[NSDate date]];
+        item.due = [formatter stringFromDate:[[NSDate date] dateByAddingTimeInterval:30 * 24 * 60 * 60]];
+        item.notes = @"";
+        item.originalTotal = element;
+        item.effectiveTotal = element;
+        item.receivedTotal = element * 0.8;
+        
+        total += item.receivedTotal;
+        [articles addObject:item];
+    }
+
     defaultValues = @{
-    @"companyName"  : @"Apex-net s.r.l.",
-    @"reportName"   : @"Report Persone",
-    @"people"       : @[p1, p2, p3, p4]
+        @"articles"         : articles,
+        @"companyName"      : @"Teseo s.r.l.",
+        @"companyAddress"   : @"Via A. Carrante, 31",
+        @"companyTelephone" : @"0802205198",
+        @"companyEmail"     : @"info@teseo.it",
+        @"otherCompanyName" : @"Rossi Paolo s.r.l.",
+        @"total"            : [NSString stringWithFormat: @"%f", total]
     };
+
     
     PRKGenerator * generator = [PRKGenerator sharedGenerator];
     generator.dataSource = self;
     generator.delegate = self;
     
     NSError * error;
-    [generator createReportWithName:@"template1" itemsPerPage:30 error:&error];
+    
+    NSString * templatePath = [[NSBundle mainBundle] pathForResource:@"template1" ofType:@"mustache"];
+    [generator createReportWithName:@"template1" templateURLString:templatePath itemsPerPage:20 totalItems:articles.count pageOrientation:PRKLandscapePage error:&error];
 }
 
 - (void)didReceiveMemoryWarning
@@ -54,14 +69,15 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (NSString *)reportsGenerator:(PRKGenerator *)generator templateURLStringForReportName:(NSString *)reportName
-{
-    return [[NSBundle mainBundle] pathForResource:reportName ofType:@"mustache"];
-}
-
 - (id)reportsGenerator:(PRKGenerator *)generator dataForReport:(NSString *)reportName withTag:(NSString *)tagName forPage:(NSUInteger)pageNumber
 {
     return [defaultValues valueForKey:tagName];
+}
+
+- (void)reportsGenerator:(PRKGenerator *)generator didFinishRenderingWithData:(NSData *)data
+{
+    UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:@"OK" message:@"OK" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil];
+    [alertView show];
 }
 
 @end
