@@ -65,11 +65,19 @@
 
 - (id)reportsGenerator:(PRKGenerator *)generator dataForReport:(NSString *)reportName withTag:(NSString *)tagName forPage:(NSUInteger)pageNumber
 {
+    if ([tagName isEqualToString:@"articles"])
+        return [[defaultValues valueForKey:tagName] subarrayWithRange:NSMakeRange((pageNumber - 1) * 20, 20)];
+    
     return [defaultValues valueForKey:tagName];
 }
 
 - (void)reportsGenerator:(PRKGenerator *)generator didFinishRenderingWithData:(NSData *)data
 {
+    NSString * basePath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString * fileName = [basePath stringByAppendingPathComponent:@"report.pdf"];
+    
+    [data writeToFile:fileName atomically:YES];
+    
     UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:@"OK" message:@"OK" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil];
     [alertView show];
 }

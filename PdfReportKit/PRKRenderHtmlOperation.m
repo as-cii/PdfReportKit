@@ -38,7 +38,7 @@
     executing = YES;
     [self didChangeValueForKey:@"isExecuting"];
     
-    [renderingWebView loadHTMLString:htmlSource baseURL:[NSURL URLWithString:@"localhost"]];
+    [renderingWebView loadHTMLString:htmlSource baseURL:[NSURL URLWithString:@"http://localhost"]];
 }
 
 - (BOOL)isConcurrent
