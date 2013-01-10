@@ -67,3 +67,7 @@ Then you must conform to `PRKGeneratorDataSource` and `PRKGeneratorDelegate` in 
 	{
 		// Report generated!!! Now we can use NSData as we want!
 	}
+
+## Result
+Here it is your wonderful report generated in few simple steps (you can skip all the steps above and see the result just by executing the example application provided)!
+![Report](http://img706.imageshack.us/img706/6599/captureylw.png)
