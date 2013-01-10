@@ -14,7 +14,7 @@ If you want to include Pdf Report Kit in your application just follow these simp
 
 - Clone this project (it will download also GRMustache automatically)
 - Go to GRMustache repository and follow the guide to include it in your application
-- Copy and paste Pdf Report Kit *"PRK\*.m*" and *"PRK\*.h"* in your application
+- Copy and paste all the files (.h and .m) with PRK prefix that you find in the PdfReportKit directory
 - Enjoy!
 
 ## Templates
