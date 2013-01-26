@@ -8,6 +8,12 @@ Pdf Report Kit uses Mustache (GRMustache implementation) to render content. With
 
 **GRMustache Implementation Repository** (https://github.com/groue/GRMustache)
 
+## Running the Demo
+
+    git clone git@github.com:as-cii/PdfReportKit.git # or wherever your fork is located.
+    git submodule init
+    git submodule update
+
 
 ## How to install
 If you want to include Pdf Report Kit in your application just follow these simple steps:
@@ -27,11 +33,11 @@ Using Pdf Report Kit is really simple. Just create a valid html template with th
 	{{/documentHeader}}
 
 **Page Header** (header generated for every page)
-		
+
 	{{#pageHeader}}
 		foo
 	{{/pageHeader}}
-		
+
 **Page Content** (content generated for every page)
 
 	{{#pageContent}}
@@ -43,7 +49,7 @@ Using Pdf Report Kit is really simple. Just create a valid html template with th
 	{{#pageFooter}}
 		foo
 	{{/pageFooter}}
-	
+
 For other information about the template syntax please check the example provided in the source code.
 
 ## OK, now I want to see my report!
@@ -51,7 +57,7 @@ Once you have set up everything you can generate your report in a few steps.
 
 Import "PRKGenerator.h" and access the singleton via: `[PRKGenerator sharedGenerator]` and then use it as follows:
 
-	NSError * error;    
+	NSError * error;
     NSString * templatePath = [[NSBundle mainBundle] pathForResource:@"foo" ofType:@"mustache"];
     [[PRKGenerator sharedGenerator] createReportWithName:@"foo" templateURLString:templatePath itemsPerPage:20 totalItems:articles.count pageOrientation:PRKLandscapePage dataSource:self delegate:self error:&error];
 
