@@ -77,9 +77,9 @@
     NSString * fileName = [basePath stringByAppendingPathComponent:@"report.pdf"];
     
     [data writeToFile:fileName atomically:YES];
-    
-    UIAlertView * alertView = [[UIAlertView alloc] initWithTitle:@"OK" message:@"OK" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles: nil];
-    [alertView show];
+
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL fileURLWithPath:fileName]];
+    [self.webView loadRequest:request];
 }
 
 @end
