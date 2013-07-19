@@ -75,7 +75,9 @@ static NSArray * reportDefaultTags = nil;
         UIGraphicsBeginPDFContextToData(currentReportData, CGRectMake(0, 0, 1000, 800), nil);
         
     currentReportItemsPerPage = itemsPerPage;
-    currentReportTotalPages = totalItems / itemsPerPage;
+    currentNumberOfItems = currentReportItemsPerPage;
+    currentReportTotalItems = totalItems;
+    remainingItems = 0;
     
     
     NSInvocationOperation * test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:0]];
@@ -85,7 +87,7 @@ static NSArray * reportDefaultTags = nil;
 - (void)createPage: (NSNumber *)page
 {
     int i = [page intValue];
-    if (i < currentReportTotalPages)
+    if (remainingItems < currentReportTotalItems)
     {
         [renderedTags removeAllObjects];
         currentReportPage = i + 1;
@@ -93,6 +95,7 @@ static NSArray * reportDefaultTags = nil;
         NSError * error;
         // PRKGenerator is key-value "get" compliant (as GRMustache needs), so we could use self
         NSString * renderedHtml = [template renderObject:self error:&error];
+        
         NSMutableString * wellFormedHeader = [NSMutableString stringWithString:renderedHtml];
         NSMutableString * wellFormedContent = [NSMutableString stringWithString:renderedHtml];
         NSMutableString * wellFormedFooter = [NSMutableString stringWithString:renderedHtml];
@@ -125,10 +128,6 @@ static NSArray * reportDefaultTags = nil;
          contentOperation,
          footerOperation,
          renderToPdf] waitUntilFinished:NO];
-        
-        
-        NSInvocationOperation * test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:i + 1]];
-        [self.renderingQueue addOperation:test];
     }
     else
     {
@@ -142,13 +141,13 @@ static NSArray * reportDefaultTags = nil;
 - (id)valueForKey:(NSString *)key
 {
     id<PRKGeneratorDataSource> source = [reportDefaultTags containsObject:key] ? self : self.dataSource;
-    id data = [source reportsGenerator:self dataForReport:currentReportName withTag:key forPage: currentReportPage];
+    id data = [source reportsGenerator:self dataForReport:currentReportName withTag:key forPage: currentReportPage offset:remainingItems itemsCount:currentNumberOfItems];
 
     
     return data;
 }
 
-- (id)reportsGenerator:(PRKGenerator *)generator dataForReport:(NSString *)reportName withTag:(NSString *)tagName forPage:(NSUInteger)pageNumber
+- (id)reportsGenerator:(PRKGenerator *)generator dataForReport:(NSString *)reportName withTag:(NSString *)tagName forPage:(NSUInteger)pageNumber offset:(NSUInteger)offset itemsCount:(NSUInteger)itemsCount
 {
         
     return [GRMustache renderingObjectWithBlock:^NSString *(GRMustacheTag *tag, GRMustacheContext *context, BOOL *HTMLSafe, NSError *__autoreleasing *error)
@@ -200,7 +199,23 @@ static NSArray * reportDefaultTags = nil;
     int footerHeight = [footerFakeRenderer contentHeight];
     
     PRKPageRenderer * pageRenderer = [[PRKPageRenderer alloc] initWithHeaderFormatter:headerFormatter headerHeight:headerHeight andContentFormatter:contentFormatter andFooterFormatter:footerFormatter footerHeight:footerHeight];
-    [pageRenderer addPagesToPdfContext];
+    
+    NSInvocationOperation * test;
+    if (pageRenderer.numberOfPages > 1)
+    {
+        currentNumberOfItems--;
+        test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage - 1]];
+    }
+    else
+    {
+        test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage]];
+        
+        [pageRenderer addPagesToPdfContext];
+        remainingItems += currentNumberOfItems;
+        //currentNumberOfItems = currentReportItemsPerPage;
+    }
+    
+    [self.renderingQueue addOperation:test];
 }
 
 - (void)closePdfContext

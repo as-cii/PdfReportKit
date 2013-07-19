@@ -63,10 +63,18 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (id)reportsGenerator:(PRKGenerator *)generator dataForReport:(NSString *)reportName withTag:(NSString *)tagName forPage:(NSUInteger)pageNumber
+- (id)reportsGenerator:(PRKGenerator *)generator dataForReport:(NSString *)reportName withTag:(NSString *)tagName forPage:(NSUInteger)pageNumber offset:(NSUInteger)offset itemsCount:(NSUInteger)itemsCount
 {
     if ([tagName isEqualToString:@"articles"])
-        return [[defaultValues valueForKey:tagName] subarrayWithRange:NSMakeRange((pageNumber - 1) * 20, 20)];
+    {
+        int count = itemsCount;
+        if (offset + count > [[defaultValues valueForKey:tagName] count])
+        {
+            count = [[defaultValues valueForKey:tagName] count] - offset;
+        }
+        
+        return [[defaultValues valueForKey:tagName] subarrayWithRange:NSMakeRange(offset, count)];
+    }
     
     return [defaultValues valueForKey:tagName];
 }
