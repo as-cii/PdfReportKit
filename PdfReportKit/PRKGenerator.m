@@ -46,7 +46,7 @@ static NSArray * reportDefaultTags = nil;
     if (self)
     {        
         // Initialize rendering queue
-        self.renderingQueue = [[NSOperationQueue alloc] init];
+        self.renderingQueue = [NSOperationQueue mainQueue];
         self.renderingQueue.name = @"Rendering Queue";
         self.renderingQueue.maxConcurrentOperationCount = 1;
         
@@ -65,7 +65,7 @@ static NSArray * reportDefaultTags = nil;
     self.dataSource = dataSource;
     self.delegate = delegate;
     currentReportData = [NSMutableData data];
-    GRMustacheTemplate * template = [GRMustacheTemplate templateFromContentsOfFile:templatePath error:error];
+    template = [GRMustacheTemplate templateFromContentsOfFile:templatePath error:error];
     if (*error)
         return;
     
@@ -75,14 +75,24 @@ static NSArray * reportDefaultTags = nil;
         UIGraphicsBeginPDFContextToData(currentReportData, CGRectMake(0, 0, 1000, 800), nil);
         
     currentReportItemsPerPage = itemsPerPage;
-    int pagesCount = totalItems / itemsPerPage;
-    for (int i = 0; i < pagesCount; i++)
+    currentReportTotalPages = totalItems / itemsPerPage;
+    
+    
+    NSInvocationOperation * test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:0]];
+    [self.renderingQueue addOperation:test];
+}
+
+- (void)createPage: (NSNumber *)page
+{
+    int i = [page intValue];
+    if (i < currentReportTotalPages)
     {
         [renderedTags removeAllObjects];
         currentReportPage = i + 1;
-                
+        
+        NSError * error;
         // PRKGenerator is key-value "get" compliant (as GRMustache needs), so we could use self
-        NSString * renderedHtml = [template renderObject:self error:error];        
+        NSString * renderedHtml = [template renderObject:self error:&error];
         NSMutableString * wellFormedHeader = [NSMutableString stringWithString:renderedHtml];
         NSMutableString * wellFormedContent = [NSMutableString stringWithString:renderedHtml];
         NSMutableString * wellFormedFooter = [NSMutableString stringWithString:renderedHtml];
@@ -112,16 +122,21 @@ static NSArray * reportDefaultTags = nil;
         NSInvocationOperation * renderToPdf = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(renderPage) object:[NSNumber numberWithInteger:i]];
         
         [self.renderingQueue addOperations:@[headerOperation,
-                                             contentOperation,
-                                             footerOperation,
-                                             renderToPdf] waitUntilFinished:NO];
-
+         contentOperation,
+         footerOperation,
+         renderToPdf] waitUntilFinished:NO];
+        
+        
+        NSInvocationOperation * test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:i + 1]];
+        [self.renderingQueue addOperation:test];
     }
-    
-    [self.renderingQueue addOperationWithBlock:^{
-        // Invoke on main thread, otherwise it won't work!
-        [self performSelectorOnMainThread:@selector(closePdfContext) withObject:nil waitUntilDone:YES];
-    }];
+    else
+    {
+        [self.renderingQueue addOperationWithBlock:^{
+            // Invoke on main thread, otherwise it won't work!
+            [self closePdfContext];
+        }];
+    }
 }
 
 - (id)valueForKey:(NSString *)key
@@ -171,7 +186,7 @@ static NSArray * reportDefaultTags = nil;
 - (void)renderPage
 {
     // Invoke this operation on UI Thread, otherwise it won't work!
-    [self performSelectorOnMainThread:@selector(internalRenderPage) withObject:nil waitUntilDone:YES];
+    [self internalRenderPage];
 }
 
 - (void)internalRenderPage
