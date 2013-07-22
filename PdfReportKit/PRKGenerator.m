@@ -76,7 +76,10 @@ static NSArray * reportDefaultTags = nil;
         
     currentReportItemsPerPage = itemsPerPage;
     currentNumberOfItems = currentReportItemsPerPage;
+    currentMaxItemsSinglePage = itemsPerPage;
+    currentMinItemsSinglePage = nil;
     currentReportTotalItems = totalItems;
+    currentSuccessSinglePage = NO;
     remainingItems = 0;
     
     
@@ -203,16 +206,33 @@ static NSArray * reportDefaultTags = nil;
     NSInvocationOperation * test;
     if (pageRenderer.numberOfPages > 1)
     {
-        currentNumberOfItems--;
+        if (currentSuccessSinglePage) {
+            currentNumberOfItems --;
+        }
+        else
+        {
+            currentMaxItemsSinglePage = currentNumberOfItems;
+            currentNumberOfItems = currentNumberOfItems / 2;
+        }
         test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage - 1]];
     }
     else
     {
-        test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage]];
-        
-        [pageRenderer addPagesToPdfContext];
-        remainingItems += currentNumberOfItems;
-        //currentNumberOfItems = currentReportItemsPerPage;
+        // è il massimo numero di elementi che posso stampare quindi stampo il pdf
+        if (currentMinItemsSinglePage == currentNumberOfItems) {
+            test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage]];
+            [pageRenderer addPagesToPdfContext];
+            remainingItems += currentNumberOfItems;
+        }
+        else
+        {
+            //provo a stampare un elemento in piu e setto il minimo con cui funziona
+            currentMinItemsSinglePage = currentNumberOfItems;
+            currentNumberOfItems = currentNumberOfItems + 1;
+            currentSuccessSinglePage = YES;
+            test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage - 1]];
+            //currentNumberOfItems = currentReportItemsPerPage;
+        }
     }
     
     [self.renderingQueue addOperation:test];
