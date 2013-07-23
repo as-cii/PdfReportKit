@@ -28,7 +28,16 @@ typedef NS_ENUM(NSInteger, PRKPageOrientation) {
     NSString        * currentReportName;
     NSUInteger        currentReportPage;
     NSUInteger        currentReportItemsPerPage;
+    NSUInteger        currentReportTotalItems;
+    NSUInteger        currentNumberOfItems;
+    NSUInteger        remainingItems;
+    NSUInteger        currentMaxItemsSinglePage;
+    NSUInteger        currentMinItemsSinglePage;
+    bool              currentSuccessSinglePage;
+    
+    
     NSMutableData          * currentReportData;
+    GRMustacheTemplate * template;
     
     NSMutableDictionary * renderedTags;
     
