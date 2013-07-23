@@ -211,7 +211,6 @@ static NSArray * reportDefaultTags = nil;
         }
         else
         {
-            currentMaxItemsSinglePage = currentNumberOfItems;
             currentNumberOfItems = currentNumberOfItems / 2;
         }
         test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage - 1]];
@@ -223,6 +222,9 @@ static NSArray * reportDefaultTags = nil;
             test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage]];
             [pageRenderer addPagesToPdfContext];
             remainingItems += currentNumberOfItems;
+            currentNumberOfItems =  currentMaxItemsSinglePage;
+            currentMinItemsSinglePage = currentNumberOfItems;
+            currentSuccessSinglePage = NO;
         }
         else
         {
@@ -231,7 +233,6 @@ static NSArray * reportDefaultTags = nil;
             currentNumberOfItems = currentNumberOfItems + 1;
             currentSuccessSinglePage = YES;
             test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage - 1]];
-            //currentNumberOfItems = currentReportItemsPerPage;
         }
     }
     

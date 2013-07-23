@@ -54,7 +54,7 @@
     
     NSError * error;    
     NSString * templatePath = [[NSBundle mainBundle] pathForResource:@"template1" ofType:@"mustache"];
-    [[PRKGenerator sharedGenerator] createReportWithName:@"template1" templateURLString:templatePath itemsPerPage:20 totalItems:articles.count pageOrientation:PRKLandscapePage dataSource:self delegate:self error:&error];
+    [[PRKGenerator sharedGenerator] createReportWithName:@"template1" templateURLString:templatePath itemsPerPage:100 totalItems:articles.count pageOrientation:PRKLandscapePage dataSource:self delegate:self error:&error];
 }
 
 - (void)didReceiveMemoryWarning
