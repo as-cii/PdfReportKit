@@ -54,7 +54,7 @@
     
     NSError * error;    
     NSString * templatePath = [[NSBundle mainBundle] pathForResource:@"template1" ofType:@"mustache"];
-    [[PRKGenerator sharedGenerator] createReportWithName:@"template1" templateURLString:templatePath itemsPerPage:20 totalItems:articles.count pageOrientation:PRKLandscapePage dataSource:self delegate:self error:&error];
+    [[PRKGenerator sharedGenerator] createReportWithName:@"template1" templateURLString:templatePath itemsPerPage:100 totalItems:articles.count pageOrientation:PRKLandscapePage dataSource:self delegate:self error:&error];
 }
 
 - (void)didReceiveMemoryWarning
@@ -63,10 +63,18 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (id)reportsGenerator:(PRKGenerator *)generator dataForReport:(NSString *)reportName withTag:(NSString *)tagName forPage:(NSUInteger)pageNumber
+- (id)reportsGenerator:(PRKGenerator *)generator dataForReport:(NSString *)reportName withTag:(NSString *)tagName forPage:(NSUInteger)pageNumber offset:(NSUInteger)offset itemsCount:(NSUInteger)itemsCount
 {
     if ([tagName isEqualToString:@"articles"])
-        return [[defaultValues valueForKey:tagName] subarrayWithRange:NSMakeRange((pageNumber - 1) * 20, 20)];
+    {
+        int count = itemsCount;
+        if (offset + count > [[defaultValues valueForKey:tagName] count])
+        {
+            count = [[defaultValues valueForKey:tagName] count] - offset;
+        }
+        
+        return [[defaultValues valueForKey:tagName] subarrayWithRange:NSMakeRange(offset, count)];
+    }
     
     return [defaultValues valueForKey:tagName];
 }

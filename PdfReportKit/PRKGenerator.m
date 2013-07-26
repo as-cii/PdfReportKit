@@ -46,7 +46,7 @@ static NSArray * reportDefaultTags = nil;
     if (self)
     {        
         // Initialize rendering queue
-        self.renderingQueue = [[NSOperationQueue alloc] init];
+        self.renderingQueue = [NSOperationQueue mainQueue];
         self.renderingQueue.name = @"Rendering Queue";
         self.renderingQueue.maxConcurrentOperationCount = 1;
         
@@ -65,7 +65,7 @@ static NSArray * reportDefaultTags = nil;
     self.dataSource = dataSource;
     self.delegate = delegate;
     currentReportData = [NSMutableData data];
-    GRMustacheTemplate * template = [GRMustacheTemplate templateFromContentsOfFile:templatePath error:error];
+    template = [GRMustacheTemplate templateFromContentsOfFile:templatePath error:error];
     if (*error)
         return;
     
@@ -75,14 +75,30 @@ static NSArray * reportDefaultTags = nil;
         UIGraphicsBeginPDFContextToData(currentReportData, CGRectMake(0, 0, 1000, 800), nil);
         
     currentReportItemsPerPage = itemsPerPage;
-    int pagesCount = totalItems / itemsPerPage;
-    for (int i = 0; i < pagesCount; i++)
+    currentNumberOfItems = currentReportItemsPerPage;
+    currentMaxItemsSinglePage = itemsPerPage;
+    currentMinItemsSinglePage = itemsPerPage;
+    currentReportTotalItems = totalItems;
+    currentSuccessSinglePage = NO;
+    remainingItems = 0;
+    
+    
+    NSInvocationOperation * test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:0]];
+    [self.renderingQueue addOperation:test];
+}
+
+- (void)createPage: (NSNumber *)page
+{
+    int i = [page intValue];
+    if (remainingItems < currentReportTotalItems)
     {
         [renderedTags removeAllObjects];
         currentReportPage = i + 1;
-                
+        
+        NSError * error;
         // PRKGenerator is key-value "get" compliant (as GRMustache needs), so we could use self
-        NSString * renderedHtml = [template renderObject:self error:error];        
+        NSString * renderedHtml = [template renderObject:self error:&error];
+        
         NSMutableString * wellFormedHeader = [NSMutableString stringWithString:renderedHtml];
         NSMutableString * wellFormedContent = [NSMutableString stringWithString:renderedHtml];
         NSMutableString * wellFormedFooter = [NSMutableString stringWithString:renderedHtml];
@@ -112,28 +128,29 @@ static NSArray * reportDefaultTags = nil;
         NSInvocationOperation * renderToPdf = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(renderPage) object:[NSNumber numberWithInteger:i]];
         
         [self.renderingQueue addOperations:@[headerOperation,
-                                             contentOperation,
-                                             footerOperation,
-                                             renderToPdf] waitUntilFinished:NO];
-
+         contentOperation,
+         footerOperation,
+         renderToPdf] waitUntilFinished:NO];
     }
-    
-    [self.renderingQueue addOperationWithBlock:^{
-        // Invoke on main thread, otherwise it won't work!
-        [self performSelectorOnMainThread:@selector(closePdfContext) withObject:nil waitUntilDone:YES];
-    }];
+    else
+    {
+        [self.renderingQueue addOperationWithBlock:^{
+            // Invoke on main thread, otherwise it won't work!
+            [self closePdfContext];
+        }];
+    }
 }
 
 - (id)valueForKey:(NSString *)key
 {
     id<PRKGeneratorDataSource> source = [reportDefaultTags containsObject:key] ? self : self.dataSource;
-    id data = [source reportsGenerator:self dataForReport:currentReportName withTag:key forPage: currentReportPage];
+    id data = [source reportsGenerator:self dataForReport:currentReportName withTag:key forPage: currentReportPage offset:remainingItems itemsCount:currentNumberOfItems];
 
     
     return data;
 }
 
-- (id)reportsGenerator:(PRKGenerator *)generator dataForReport:(NSString *)reportName withTag:(NSString *)tagName forPage:(NSUInteger)pageNumber
+- (id)reportsGenerator:(PRKGenerator *)generator dataForReport:(NSString *)reportName withTag:(NSString *)tagName forPage:(NSUInteger)pageNumber offset:(NSUInteger)offset itemsCount:(NSUInteger)itemsCount
 {
         
     return [GRMustache renderingObjectWithBlock:^NSString *(GRMustacheTag *tag, GRMustacheContext *context, BOOL *HTMLSafe, NSError *__autoreleasing *error)
@@ -171,7 +188,7 @@ static NSArray * reportDefaultTags = nil;
 - (void)renderPage
 {
     // Invoke this operation on UI Thread, otherwise it won't work!
-    [self performSelectorOnMainThread:@selector(internalRenderPage) withObject:nil waitUntilDone:YES];
+    [self internalRenderPage];
 }
 
 - (void)internalRenderPage
@@ -185,7 +202,41 @@ static NSArray * reportDefaultTags = nil;
     int footerHeight = [footerFakeRenderer contentHeight];
     
     PRKPageRenderer * pageRenderer = [[PRKPageRenderer alloc] initWithHeaderFormatter:headerFormatter headerHeight:headerHeight andContentFormatter:contentFormatter andFooterFormatter:footerFormatter footerHeight:footerHeight];
-    [pageRenderer addPagesToPdfContext];
+    
+    NSInvocationOperation * test;
+    if (pageRenderer.numberOfPages > 1)
+    {
+        if (currentSuccessSinglePage) {
+            currentNumberOfItems --;
+        }
+        else
+        {
+            currentNumberOfItems = currentNumberOfItems / 2;
+        }
+        test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage - 1]];
+    }
+    else
+    {
+        // è il massimo numero di elementi che posso stampare quindi stampo il pdf
+        if (currentMinItemsSinglePage == currentNumberOfItems) {
+            test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage]];
+            [pageRenderer addPagesToPdfContext];
+            remainingItems += currentNumberOfItems;
+            currentNumberOfItems =  currentMaxItemsSinglePage;
+            currentMinItemsSinglePage = currentNumberOfItems;
+            currentSuccessSinglePage = NO;
+        }
+        else
+        {
+            //provo a stampare un elemento in piu e setto il minimo con cui funziona
+            currentMinItemsSinglePage = currentNumberOfItems;
+            currentNumberOfItems = currentNumberOfItems + 1;
+            currentSuccessSinglePage = YES;
+            test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage - 1]];
+        }
+    }
+    
+    [self.renderingQueue addOperation:test];
 }
 
 - (void)closePdfContext
