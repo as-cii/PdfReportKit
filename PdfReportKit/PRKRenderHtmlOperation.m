@@ -38,7 +38,10 @@
     executing = YES;
     [self didChangeValueForKey:@"isExecuting"];
     
-    [renderingWebView loadHTMLString:htmlSource baseURL:[NSURL URLWithString:@"http://localhost"]];
+    NSString *path = [[NSBundle mainBundle] bundlePath];
+    NSURL *baseURL = [NSURL fileURLWithPath:path];
+    
+    [renderingWebView loadHTMLString:htmlSource baseURL:baseURL];
 }
 
 - (BOOL)isConcurrent
