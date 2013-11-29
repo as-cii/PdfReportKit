@@ -79,12 +79,13 @@ Within the html template you can now specify if an image for the PDF is located 
 
 To do this within your template use the following image prefixes:
 
+```html
 <img src="bundleimage://yourimage.png" />
 
 or 
 
 <img src="documentsimage://yourdownloadedimage.png" />
-
+```
 
 ## Result
 Here it is your wonderful report generated in few simple steps (you can skip all the steps above and see the result just by executing the example application provided)!
