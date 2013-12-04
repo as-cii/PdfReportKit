@@ -56,7 +56,58 @@ static NSArray * reportDefaultTags = nil;
     return self;
 }
 
-- (void)createReportWithName:(NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage:(NSUInteger)itemsPerPage totalItems:(NSUInteger)totalItems pageOrientation:(PRKPageOrientation)orientation dataSource: (id<PRKGeneratorDataSource>)dataSource delegate: (id<PRKGeneratorDelegate>)delegate error:(NSError *__autoreleasing *)error;
++ (CGSize)pageSizeForLetterWithOrientation:(PRKPageOrientation)orientation {
+    CGFloat resolution = 72.0;
+    CGSize sizeInInches = (orientation == PRKPortraitPage) ? CGSizeMake(8.5, 11.0) : CGSizeMake(11.0, 8.5);
+    return CGSizeMake(sizeInInches.width * resolution, sizeInInches.height * resolution);
+}
+
++ (CGSize)pageSizeForA4WithOrientation:(PRKPageOrientation)orientation {
+    CGFloat resolution = 72.0;
+    CGSize sizeInInches = (orientation == PRKPortraitPage) ? CGSizeMake(8.27, 11.69) : CGSizeMake(11.69, 8.27);
+    return CGSizeMake(sizeInInches.width * resolution, sizeInInches.height * resolution);
+}
+
++ (PRKPageFormat)defaultPageFormatForLocale:(NSLocale *)locale {
+    NSDictionary * components = [NSLocale componentsFromLocaleIdentifier:locale.localeIdentifier];
+    NSString * country = components[NSLocaleCountryCode];
+    NSSet * letterCountries = [NSSet setWithObjects:@"US", @"CA", @"MX", @"CO", @"VE", @"AR", @"CL", @"PH", nil];
+    if ([letterCountries containsObject:country]) {
+        return PRKLetterFormat;
+    }
+    return PRKA4Format;
+}
+
+- (void)createReportWithName:(NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage:(NSUInteger)itemsPerPage totalItems:(NSUInteger)totalItems pageOrientation:(PRKPageOrientation)orientation dataSource:(id<PRKGeneratorDataSource>)dataSource delegate:(id<PRKGeneratorDelegate>)delegate error:(NSError *__autoreleasing *)error {
+    PRKPageFormat pageFormat = [[self class] defaultPageFormatForLocale:[NSLocale currentLocale]];
+    [self createReportWithName:reportName
+             templateURLString:templatePath
+                  itemsPerPage:itemsPerPage
+                    totalItems:totalItems
+                    pageFormat:pageFormat
+               pageOrientation:orientation
+                    dataSource:dataSource
+                      delegate:delegate
+                         error:error];
+}
+
+- (void)createReportWithName:(NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage:(NSUInteger)itemsPerPage totalItems:(NSUInteger)totalItems pageFormat:(PRKPageFormat)format pageOrientation:(PRKPageOrientation)orientation dataSource: (id<PRKGeneratorDataSource>)dataSource delegate: (id<PRKGeneratorDelegate>)delegate error:(NSError *__autoreleasing *)error
+{
+    CGSize pageSize = [[self class] pageSizeForA4WithOrientation:orientation];
+    if (format == PRKLetterFormat)
+        pageSize = [[self class] pageSizeForLetterWithOrientation:orientation];
+    
+    [self createReportWithName:reportName
+             templateURLString:templatePath
+                  itemsPerPage:itemsPerPage
+                    totalItems:totalItems
+                    pageSize:pageSize
+                    dataSource:dataSource
+                      delegate:delegate
+                         error:error];
+}
+
+- (void)createReportWithName:(NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage:(NSUInteger)itemsPerPage totalItems:(NSUInteger)totalItems pageSize:(CGSize)pageSize dataSource: (id<PRKGeneratorDataSource>)dataSource delegate: (id<PRKGeneratorDelegate>)delegate error:(NSError *__autoreleasing *)error
 {
     // TODO: replace and add report processing to queue
     if (self.renderingQueue.operationCount > 0)
@@ -69,11 +120,8 @@ static NSArray * reportDefaultTags = nil;
     if (*error)
         return;
     
-    if (orientation == PRKPortraitPage)
-        UIGraphicsBeginPDFContextToData(currentReportData, CGRectMake(0, 0, 800, 1000), nil);
-    else
-        UIGraphicsBeginPDFContextToData(currentReportData, CGRectMake(0, 0, 1000, 800), nil);
-        
+    UIGraphicsBeginPDFContextToData(currentReportData, CGRectMake(0, 0, pageSize.width, pageSize.height), nil);
+    
     currentReportItemsPerPage = itemsPerPage;
     currentNumberOfItems = currentReportItemsPerPage;
     currentMaxItemsSinglePage = itemsPerPage;
@@ -82,9 +130,9 @@ static NSArray * reportDefaultTags = nil;
     currentSuccessSinglePage = NO;
     remainingItems = 0;
     
-    
-    NSInvocationOperation * test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:0]];
-    [self.renderingQueue addOperation:test];
+    [self.renderingQueue addOperationWithBlock:^{
+        [self createPage:@0];
+    }];
 }
 
 - (void)createPage: (NSNumber *)page
@@ -102,7 +150,6 @@ static NSArray * reportDefaultTags = nil;
         NSMutableString * wellFormedHeader = [NSMutableString stringWithString:renderedHtml];
         NSMutableString * wellFormedContent = [NSMutableString stringWithString:renderedHtml];
         NSMutableString * wellFormedFooter = [NSMutableString stringWithString:renderedHtml];
-        
         
         // Trim content and footer to get header
         [wellFormedHeader replaceOccurrencesOfString:[renderedTags objectForKey:@"pageContent"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedHeader.length)];
@@ -128,9 +175,9 @@ static NSArray * reportDefaultTags = nil;
         NSInvocationOperation * renderToPdf = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(renderPage) object:[NSNumber numberWithInteger:i]];
         
         [self.renderingQueue addOperations:@[headerOperation,
-         contentOperation,
-         footerOperation,
-         renderToPdf] waitUntilFinished:NO];
+                                             contentOperation,
+                                             footerOperation,
+                                             renderToPdf] waitUntilFinished:NO];
     }
     else
     {
@@ -145,7 +192,6 @@ static NSArray * reportDefaultTags = nil;
 {
     id<PRKGeneratorDataSource> source = [reportDefaultTags containsObject:key] ? self : self.dataSource;
     id data = [source reportsGenerator:self dataForReport:currentReportName withTag:key forPage: currentReportPage offset:remainingItems itemsCount:currentNumberOfItems];
-
     
     return data;
 }
@@ -203,7 +249,7 @@ static NSArray * reportDefaultTags = nil;
     
     PRKPageRenderer * pageRenderer = [[PRKPageRenderer alloc] initWithHeaderFormatter:headerFormatter headerHeight:headerHeight andContentFormatter:contentFormatter andFooterFormatter:footerFormatter footerHeight:footerHeight];
     
-    NSInvocationOperation * test;
+    NSUInteger pageNumber = currentReportPage;
     if (pageRenderer.numberOfPages > 1)
     {
         if (currentSuccessSinglePage) {
@@ -213,13 +259,12 @@ static NSArray * reportDefaultTags = nil;
         {
             currentNumberOfItems = currentNumberOfItems / 2;
         }
-        test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage - 1]];
+        pageNumber--;
     }
     else
     {
         // è il massimo numero di elementi che posso stampare quindi stampo il pdf
         if (currentMinItemsSinglePage == currentNumberOfItems) {
-            test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage]];
             [pageRenderer addPagesToPdfContext];
             remainingItems += currentNumberOfItems;
             currentNumberOfItems =  currentMaxItemsSinglePage;
@@ -232,11 +277,13 @@ static NSArray * reportDefaultTags = nil;
             currentMinItemsSinglePage = currentNumberOfItems;
             currentNumberOfItems = currentNumberOfItems + 1;
             currentSuccessSinglePage = YES;
-            test = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(createPage:) object:[NSNumber numberWithInteger:currentReportPage - 1]];
+            pageNumber--;
         }
     }
     
-    [self.renderingQueue addOperation:test];
+    [self.renderingQueue addOperationWithBlock:^{
+        [self createPage:@(pageNumber)];
+    }];
 }
 
 - (void)closePdfContext
