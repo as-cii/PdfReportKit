@@ -13,22 +13,13 @@
  limitations under the License. */
 
 #import <Foundation/Foundation.h>
+
 #import "PRKRenderHtmlOperationDelegate.h"
 
-
 @interface PRKRenderHtmlOperation : NSOperation<UIWebViewDelegate>
-{
-    PRKSectionType      htmlSectionType;
-    NSString            * htmlSource;
-    UIWebView           * renderingWebView;
-    
-    BOOL executing;
-    BOOL finished;
-}
-
 
 @property (nonatomic, weak) id<PRKRenderHtmlOperationDelegate> delegate;
 
-- (id) initWithHtmlContent: (NSString *)html andSectionType: (PRKSectionType)sectionType;
+- (id)initWithHtmlContent:(NSString *)html andSectionType:(PRKSectionType)sectionType;
 
 @end

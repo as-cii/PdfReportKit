@@ -15,6 +15,17 @@
 #import "PRKRenderHtmlOperation.h"
 #import "PRKGenerator.h"
 
+@interface PRKRenderHtmlOperation ()
+
+@property (nonatomic, assign) PRKSectionType htmlSectionType;
+@property (nonatomic, copy)   NSString  * htmlSource;
+@property (nonatomic, strong) UIWebView * renderingWebView;
+
+@property (atomic, assign) BOOL executing;
+@property (atomic, assign) BOOL finished;
+
+@end
+
 @implementation PRKRenderHtmlOperation
 
 - (id)initWithHtmlContent:(NSString *)html andSectionType: (PRKSectionType)sectionType
@@ -22,11 +33,11 @@
     self = [super init];
     if (self)
     {        
-        htmlSource = html;
-        htmlSectionType = sectionType;
+        self.htmlSource = html;
+        self.htmlSectionType = sectionType;
         
-        renderingWebView = [[UIWebView alloc] init];
-        renderingWebView.delegate = self;
+        self.renderingWebView = [[UIWebView alloc] init];
+        self.renderingWebView.delegate = self;
     }
     
     return self;
@@ -34,14 +45,9 @@
 
 - (void)start
 {
-    [self willChangeValueForKey:@"isExecuting"];
-    executing = YES;
-    [self didChangeValueForKey:@"isExecuting"];
-    
-    NSString *path = [[NSBundle mainBundle] bundlePath];
-    NSURL *baseURL = [NSURL fileURLWithPath:path];
-    
-    [renderingWebView loadHTMLString:htmlSource baseURL:baseURL];
+    self.executing = YES;
+    NSURL * baseURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
+    [self.renderingWebView loadHTMLString:self.htmlSource baseURL:baseURL];
 }
 
 - (BOOL)isConcurrent
@@ -51,33 +57,30 @@
 
 - (BOOL)isFinished
 {
-    @synchronized(self)
-    {
-        return finished;
-    }
+    return self.finished;
+}
+
++ (NSSet *)keyPathsForValuesAffectingIsFinished
+{
+    return [NSSet setWithObjects:NSStringFromSelector(@selector(finished)), nil];
 }
 
 - (BOOL)isExecuting
 {
-    @synchronized(self)
-    {
-        return executing;
-    }
+    return self.executing;
+}
+
++ (NSSet *)keyPathsForValuesAffectingIsExecuting
+{
+    return [NSSet setWithObjects:NSStringFromSelector(@selector(executing)), nil];
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     webView.delegate = nil;
-    [self.delegate didFinishLoadingSection:htmlSectionType withPrintFormatter:renderingWebView.viewPrintFormatter];
-    [self willChangeValueForKey:@"isFinished"];
-    finished = YES;
-    [self didChangeValueForKey:@"isFinished"];
-    
-    [self willChangeValueForKey:@"isExecuting"];
-    
-    executing = NO;
-    [self didChangeValueForKey:@"isExecuting"];
-    
+    [self.delegate didFinishLoadingSection:self.htmlSectionType withPrintFormatter:self.renderingWebView.viewPrintFormatter];
+    self.finished = YES;
+    self.executing = NO;
 }
 
 @end

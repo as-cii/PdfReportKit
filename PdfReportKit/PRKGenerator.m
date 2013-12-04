@@ -18,26 +18,55 @@
 #import "PRKPageRenderer.h"
 #import "PRKFakeRenderer.h"
 
+@interface PRKGenerator ()
+
+@property (nonatomic, copy)   NSString * currentReportName;
+@property (nonatomic, assign) NSUInteger currentReportPage;
+@property (nonatomic, assign) NSUInteger currentReportItemsPerPage;
+@property (nonatomic, assign) NSUInteger currentReportTotalItems;
+@property (nonatomic, assign) NSUInteger currentNumberOfItems;
+@property (nonatomic, assign) NSUInteger remainingItems;
+@property (nonatomic, assign) NSUInteger currentMaxItemsSinglePage;
+@property (nonatomic, assign) NSUInteger currentMinItemsSinglePage;
+@property (nonatomic, assign) BOOL       currentSuccessSinglePage;
+
+@property (nonatomic, strong) NSMutableData      * currentReportData;
+@property (nonatomic, strong) GRMustacheTemplate * template;
+
+@property (nonatomic, strong) NSMutableDictionary * renderedTags;
+
+@property (nonatomic, strong) UIPrintFormatter * headerFormatter;
+@property (nonatomic, strong) UIPrintFormatter * contentFormatter;
+@property (nonatomic, strong) UIPrintFormatter * footerFormatter;
+
+@property (nonatomic, strong) NSOperationQueue * renderingQueue;
+
+@end
+
 @implementation PRKGenerator
 
 // Static fields
-static PRKGenerator * instance = nil;
-static NSArray * reportDefaultTags = nil;
 
-+ (PRKGenerator *)sharedGenerator
-{
-    @synchronized(self)
-    {
-        if (instance == nil)
-        {
-            instance = [[PRKGenerator alloc] init];
-            
-            
-            reportDefaultTags = @[ @"documentHeader", @"pageHeader", @"pageContent", @"pageFooter", @"pageNumber" ];
-        }
-        
-        return instance;
-    }
++ (instancetype)sharedGenerator {
+	static id instance = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		if (!instance) {
+			instance = [[self alloc] init];
+		}
+	});
+	return instance;
+}
+
++ (NSSet *)reportDefaultTags {
+	static NSSet *tags = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		if (!tags) {
+			tags = [NSSet setWithObjects:@"documentHeader", @"pageHeader", @"pageContent", @"pageFooter", @"pageNumber", nil];
+		}
+	});
+	return tags;
 }
 
 - (id)init
@@ -50,7 +79,7 @@ static NSArray * reportDefaultTags = nil;
         self.renderingQueue.name = @"Rendering Queue";
         self.renderingQueue.maxConcurrentOperationCount = 1;
         
-        renderedTags = [[NSMutableDictionary alloc] init];
+        self.renderedTags = [[NSMutableDictionary alloc] init];
     }
     
     return self;
@@ -115,55 +144,55 @@ static NSArray * reportDefaultTags = nil;
     
     self.dataSource = dataSource;
     self.delegate = delegate;
-    currentReportData = [NSMutableData data];
-    template = [GRMustacheTemplate templateFromContentsOfFile:templatePath error:error];
+    self.currentReportData = [NSMutableData data];
+    self.template = [GRMustacheTemplate templateFromContentsOfFile:templatePath error:error];
     if (*error)
         return;
     
-    UIGraphicsBeginPDFContextToData(currentReportData, CGRectMake(0, 0, pageSize.width, pageSize.height), nil);
+    UIGraphicsBeginPDFContextToData(self.currentReportData, CGRectMake(0, 0, pageSize.width, pageSize.height), nil);
     
-    currentReportItemsPerPage = itemsPerPage;
-    currentNumberOfItems = currentReportItemsPerPage;
-    currentMaxItemsSinglePage = itemsPerPage;
-    currentMinItemsSinglePage = itemsPerPage;
-    currentReportTotalItems = totalItems;
-    currentSuccessSinglePage = NO;
-    remainingItems = 0;
+    self.currentReportItemsPerPage = itemsPerPage;
+    self.currentNumberOfItems = self.currentReportItemsPerPage;
+    self.currentMaxItemsSinglePage = itemsPerPage;
+    self.currentMinItemsSinglePage = itemsPerPage;
+    self.currentReportTotalItems = totalItems;
+    self.currentSuccessSinglePage = NO;
+    self.remainingItems = 0;
     
     [self.renderingQueue addOperationWithBlock:^{
-        [self createPage:@0];
+        [self createPage:0];
     }];
 }
 
-- (void)createPage: (NSNumber *)page
+- (void)createPage:(NSUInteger)page
 {
-    int i = [page intValue];
-    if (remainingItems < currentReportTotalItems)
+    int i = page;
+    if (self.remainingItems < self.currentReportTotalItems)
     {
-        [renderedTags removeAllObjects];
-        currentReportPage = i + 1;
+        [self.renderedTags removeAllObjects];
+        self.currentReportPage = i + 1;
         
         NSError * error;
         // PRKGenerator is key-value "get" compliant (as GRMustache needs), so we could use self
-        NSString * renderedHtml = [template renderObject:self error:&error];
+        NSString * renderedHtml = [self.template renderObject:self error:&error];
         
         NSMutableString * wellFormedHeader = [NSMutableString stringWithString:renderedHtml];
         NSMutableString * wellFormedContent = [NSMutableString stringWithString:renderedHtml];
         NSMutableString * wellFormedFooter = [NSMutableString stringWithString:renderedHtml];
         
         // Trim content and footer to get header
-        [wellFormedHeader replaceOccurrencesOfString:[renderedTags objectForKey:@"pageContent"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedHeader.length)];
-        [wellFormedHeader replaceOccurrencesOfString:[renderedTags objectForKey:@"pageFooter"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedHeader.length)];
+        [wellFormedHeader replaceOccurrencesOfString:[self.renderedTags objectForKey:@"pageContent"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedHeader.length)];
+        [wellFormedHeader replaceOccurrencesOfString:[self.renderedTags objectForKey:@"pageFooter"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedHeader.length)];
         
         // Trim header and footer to get content
-        [wellFormedContent replaceOccurrencesOfString:[renderedTags objectForKey:@"documentHeader"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedContent.length)];
-        [wellFormedContent replaceOccurrencesOfString:[renderedTags objectForKey:@"pageHeader"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedContent.length)];
-        [wellFormedContent replaceOccurrencesOfString:[renderedTags objectForKey:@"pageFooter"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedContent.length)];
+        [wellFormedContent replaceOccurrencesOfString:[self.renderedTags objectForKey:@"documentHeader"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedContent.length)];
+        [wellFormedContent replaceOccurrencesOfString:[self.renderedTags objectForKey:@"pageHeader"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedContent.length)];
+        [wellFormedContent replaceOccurrencesOfString:[self.renderedTags objectForKey:@"pageFooter"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedContent.length)];
         
         // Trim content and header to get footer
-        [wellFormedFooter replaceOccurrencesOfString:[renderedTags objectForKey:@"documentHeader"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedFooter.length)];
-        [wellFormedFooter replaceOccurrencesOfString:[renderedTags objectForKey:@"pageHeader"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedFooter.length)];
-        [wellFormedFooter replaceOccurrencesOfString:[renderedTags objectForKey:@"pageContent"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedFooter.length)];
+        [wellFormedFooter replaceOccurrencesOfString:[self.renderedTags objectForKey:@"documentHeader"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedFooter.length)];
+        [wellFormedFooter replaceOccurrencesOfString:[self.renderedTags objectForKey:@"pageHeader"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedFooter.length)];
+        [wellFormedFooter replaceOccurrencesOfString:[self.renderedTags objectForKey:@"pageContent"] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, wellFormedFooter.length)];
         
         PRKRenderHtmlOperation * headerOperation = [[PRKRenderHtmlOperation alloc] initWithHtmlContent:wellFormedHeader andSectionType:PRKSectionTypeHeader];
         headerOperation.delegate = self;
@@ -190,8 +219,13 @@ static NSArray * reportDefaultTags = nil;
 
 - (id)valueForKey:(NSString *)key
 {
-    id<PRKGeneratorDataSource> source = [reportDefaultTags containsObject:key] ? self : self.dataSource;
-    id data = [source reportsGenerator:self dataForReport:currentReportName withTag:key forPage: currentReportPage offset:remainingItems itemsCount:currentNumberOfItems];
+    id<PRKGeneratorDataSource> source = [[[self class] reportDefaultTags] containsObject:key] ? self : self.dataSource;
+    id data = [source reportsGenerator:self
+                         dataForReport:self.currentReportName
+                               withTag:key
+                               forPage:self.currentReportPage
+                                offset:self.remainingItems
+                            itemsCount:self.currentNumberOfItems];
     
     return data;
 }
@@ -213,7 +247,7 @@ static NSArray * reportDefaultTags = nil;
         else
             renderedTag = [tag renderContentWithContext:context HTMLSafe:HTMLSafe error:error];
         
-        [renderedTags setObject:renderedTag forKey:tagName];
+        [self.renderedTags setObject:renderedTag forKey:tagName];
             
         return renderedTag;
     }];
@@ -222,11 +256,11 @@ static NSArray * reportDefaultTags = nil;
 - (void)didFinishLoadingSection:(PRKSectionType)sectionType withPrintFormatter:(UIPrintFormatter *)formatter
 {
     if (sectionType == PRKSectionTypeHeader)
-        headerFormatter = formatter;
+        self.headerFormatter = formatter;
     else if (sectionType == PRKSectionTypeContent)
-        contentFormatter = formatter;
+        self.contentFormatter = formatter;
     else if (sectionType == PRKSectionTypeFooter)
-        footerFormatter = formatter;
+        self.footerFormatter = formatter;
     else
         [NSException raise:@"Invalid Section Type" format:@"Section Type: %d is invalid", sectionType];
 }
@@ -240,57 +274,57 @@ static NSArray * reportDefaultTags = nil;
 - (void)internalRenderPage
 {
     PRKFakeRenderer * headerFakeRenderer = [[PRKFakeRenderer alloc] init];
-    [headerFakeRenderer addPrintFormatter:headerFormatter startingAtPageAtIndex:0];
+    [headerFakeRenderer addPrintFormatter:self.headerFormatter startingAtPageAtIndex:0];
     PRKFakeRenderer * footerFakeRenderer = [[PRKFakeRenderer alloc] init];
-    [footerFakeRenderer addPrintFormatter:footerFormatter startingAtPageAtIndex:0];
+    [footerFakeRenderer addPrintFormatter:self.footerFormatter startingAtPageAtIndex:0];
     
     int headerHeight = [headerFakeRenderer contentHeight];
     int footerHeight = [footerFakeRenderer contentHeight];
     
-    PRKPageRenderer * pageRenderer = [[PRKPageRenderer alloc] initWithHeaderFormatter:headerFormatter headerHeight:headerHeight andContentFormatter:contentFormatter andFooterFormatter:footerFormatter footerHeight:footerHeight];
+    PRKPageRenderer * pageRenderer = [[PRKPageRenderer alloc] initWithHeaderFormatter:self.headerFormatter headerHeight:headerHeight andContentFormatter:self.contentFormatter andFooterFormatter:self.footerFormatter footerHeight:footerHeight];
     
-    NSUInteger pageNumber = currentReportPage;
+    NSUInteger pageNumber = self.currentReportPage;
     if (pageRenderer.numberOfPages > 1)
     {
-        if (currentSuccessSinglePage) {
-            currentNumberOfItems --;
+        if (self.currentSuccessSinglePage) {
+            self.currentNumberOfItems --;
         }
         else
         {
-            currentNumberOfItems = currentNumberOfItems / 2;
+            self.currentNumberOfItems = self.currentNumberOfItems / 2;
         }
         pageNumber--;
     }
     else
     {
         // è il massimo numero di elementi che posso stampare quindi stampo il pdf
-        if (currentMinItemsSinglePage == currentNumberOfItems) {
+        if (self.currentMinItemsSinglePage == self.currentNumberOfItems) {
             [pageRenderer addPagesToPdfContext];
-            remainingItems += currentNumberOfItems;
-            currentNumberOfItems =  currentMaxItemsSinglePage;
-            currentMinItemsSinglePage = currentNumberOfItems;
-            currentSuccessSinglePage = NO;
+            self.remainingItems += self.currentNumberOfItems;
+            self.currentNumberOfItems =  self.currentMaxItemsSinglePage;
+            self.currentMinItemsSinglePage = self.currentNumberOfItems;
+            self.currentSuccessSinglePage = NO;
         }
         else
         {
             //provo a stampare un elemento in piu e setto il minimo con cui funziona
-            currentMinItemsSinglePage = currentNumberOfItems;
-            currentNumberOfItems = currentNumberOfItems + 1;
-            currentSuccessSinglePage = YES;
+            self.currentMinItemsSinglePage = self.currentNumberOfItems;
+            self.currentNumberOfItems = self.currentNumberOfItems + 1;
+            self.currentSuccessSinglePage = YES;
             pageNumber--;
         }
     }
     
     [self.renderingQueue addOperationWithBlock:^{
-        [self createPage:@(pageNumber)];
+        [self createPage:pageNumber];
     }];
 }
 
 - (void)closePdfContext
 {    
     UIGraphicsEndPDFContext();
-    [self.delegate reportsGenerator:self didFinishRenderingWithData:currentReportData];
-    currentReportData = nil;
+    [self.delegate reportsGenerator:self didFinishRenderingWithData:self.currentReportData];
+    self.currentReportData = nil;
 }
 
 @end

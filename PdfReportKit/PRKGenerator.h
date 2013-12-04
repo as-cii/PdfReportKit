@@ -29,38 +29,17 @@ typedef NS_ENUM(NSInteger, PRKPageOrientation) {
 };
 
 @interface PRKGenerator : NSObject <PRKGeneratorDataSource, PRKRenderHtmlOperationDelegate>
-{
-    NSString * currentReportName;
-    NSUInteger currentReportPage;
-    NSUInteger currentReportItemsPerPage;
-    NSUInteger currentReportTotalItems;
-    NSUInteger currentNumberOfItems;
-    NSUInteger remainingItems;
-    NSUInteger currentMaxItemsSinglePage;
-    NSUInteger currentMinItemsSinglePage;
-    BOOL       currentSuccessSinglePage;
-    
-    NSMutableData      * currentReportData;
-    GRMustacheTemplate * template;
-    
-    NSMutableDictionary * renderedTags;
-    
-    UIPrintFormatter * headerFormatter;
-    UIPrintFormatter * contentFormatter;
-    UIPrintFormatter * footerFormatter;
-}
 
-@property (nonatomic, weak)   id<PRKGeneratorDataSource> dataSource;
-@property (nonatomic, weak)   id<PRKGeneratorDelegate> delegate;
-@property (nonatomic, strong) NSOperationQueue * renderingQueue;
+@property (nonatomic, weak) id<PRKGeneratorDataSource> dataSource;
+@property (nonatomic, weak) id<PRKGeneratorDelegate> delegate;
 
 // Instance methods
-- (void)createReportWithName:(NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage:(NSUInteger)itemsPerPage totalItems:(NSUInteger)totalItems pageOrientation:(PRKPageOrientation)orientation dataSource: (id<PRKGeneratorDataSource>)dataSource delegate: (id<PRKGeneratorDelegate>)delegate error:(NSError *__autoreleasing *)error;
+- (void)createReportWithName:(NSString *)reportName itemsPerPage:(NSUInteger)itemsPerPage totalItems:(NSUInteger)totalItems pageOrientation:(PRKPageOrientation)orientation dataSource:(id<PRKGeneratorDataSource>)dataSource delegate:(id<PRKGeneratorDelegate>)delegate error:(NSError *__autoreleasing *)error;
 - (void)createReportWithName:(NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage:(NSUInteger)itemsPerPage totalItems:(NSUInteger)totalItems pageFormat:(PRKPageFormat)format pageOrientation:(PRKPageOrientation)orientation dataSource:(id<PRKGeneratorDataSource>)dataSource delegate:(id<PRKGeneratorDelegate>)delegate error:(NSError *__autoreleasing *)error;
 - (void)createReportWithName:(NSString *)reportName templateURLString:(NSString *)templatePath itemsPerPage:(NSUInteger)itemsPerPage totalItems:(NSUInteger)totalItems pageSize:(CGSize)pageSize dataSource:(id<PRKGeneratorDataSource>)dataSource delegate:(id<PRKGeneratorDelegate>)delegate error:(NSError *__autoreleasing *)error;
 
 // Static methods
-+ (PRKGenerator *)sharedGenerator;
++ (instancetype)sharedGenerator;
 
 + (CGSize)pageSizeForLetterWithOrientation:(PRKPageOrientation)orientation;
 + (CGSize)pageSizeForA4WithOrientation:(PRKPageOrientation)orientation;

@@ -14,6 +14,13 @@
 
 #import "PRKPageRenderer.h"
 
+@interface PRKPageRenderer ()
+
+@property (readwrite, strong, nonatomic) UIPrintFormatter * headerPrintFormatter;
+@property (readwrite, strong, nonatomic) UIPrintFormatter * footerPrintFormatter;
+
+@end
+
 @implementation PRKPageRenderer
 
 - (CGRect)paperRect
@@ -35,8 +42,8 @@
         self.headerHeight = headerHeight;
         self.footerHeight = footerHeight;
         
-        headerPrintFormatter = headerFormatter;
-        footerPrintFormatter = footerFormatter;
+        self.headerPrintFormatter = headerFormatter;
+        self.footerPrintFormatter = footerFormatter;
         [self addPrintFormatter:contentFormatter startingAtPageAtIndex:0];
     }
     
@@ -60,7 +67,7 @@
     PRKPageRenderer * headerRenderer = [[PRKPageRenderer alloc] init];
     headerRenderer.pageRect = self.pageRect;
     
-    [headerRenderer addPrintFormatter:headerPrintFormatter startingAtPageAtIndex:0];    
+    [headerRenderer addPrintFormatter:self.headerPrintFormatter startingAtPageAtIndex:0];
     [headerRenderer drawPageAtIndex:0 inRect:headerRect];
 }
 
@@ -69,7 +76,7 @@
     PRKPageRenderer * r = [[PRKPageRenderer alloc] init];
     r.pageRect = CGRectMake(footerRect.origin.x, footerRect.origin.y - 20, footerRect.size.width, footerRect.size.height + self.footerHeight);
     
-    [r addPrintFormatter:footerPrintFormatter startingAtPageAtIndex:0];
+    [r addPrintFormatter:self.footerPrintFormatter startingAtPageAtIndex:0];
     [r drawPageAtIndex:0 inRect:footerRect];
 }
 

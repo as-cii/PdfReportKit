@@ -15,5 +15,7 @@
 #import <UIKit/UIKit.h>
 
 @interface PRKFakeRenderer : UIPrintPageRenderer
+
 - (int)contentHeight;
+
 @end
