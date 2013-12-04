@@ -18,6 +18,6 @@
 
 @protocol PRKGeneratorDelegate <NSObject>
 
-- (void) reportsGenerator:(PRKGenerator *)generator didFinishRenderingWithData: (NSData *)data;
+- (void)reportsGenerator:(PRKGenerator *)generator didFinishRenderingWithData:(NSData *)data;
 
 @end

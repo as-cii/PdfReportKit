@@ -34,5 +34,4 @@
     return [self numberOfPages] + 20;
 }
 
-
 @end

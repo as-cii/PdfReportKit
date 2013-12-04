@@ -15,15 +15,11 @@
 #import <Foundation/Foundation.h>
 
 @interface PRKPageRenderer : UIPrintPageRenderer
-{    
-    UIPrintFormatter * headerPrintFormatter;
-    UIPrintFormatter * footerPrintFormatter;
-}
 
 @property (nonatomic, assign) CGRect pageRect;
 
 - (id)initWithHeaderFormatter:(UIPrintFormatter *)headerFormatter headerHeight:(CGFloat)headerHeight andContentFormatter:(UIPrintFormatter *)contentFormatter andFooterFormatter:(UIPrintFormatter *)footerFormatter footerHeight:(CGFloat)footerHeight;
 
-- (void) addPagesToPdfContext;
+- (void)addPagesToPdfContext;
 
 @end
