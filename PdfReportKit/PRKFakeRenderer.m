@@ -31,7 +31,7 @@
 - (int)contentHeight
 {
     [self prepareForDrawingPages:NSMakeRange(0, 1)];
-    return [self numberOfPages] + 20;
+    return (int)[self numberOfPages] + 20;
 }
 
 
