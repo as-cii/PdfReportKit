@@ -28,9 +28,10 @@
     return CGRectMake(0, 0, self.paperRect.size.width, 1);
 }
 
-- (int)contentHeight
+- (NSUInteger)contentHeight
 {
     [self prepareForDrawingPages:NSMakeRange(0, 1)];
+    
     return [self numberOfPages] + 20;
 }
 

@@ -67,7 +67,7 @@
 {
     if ([tagName isEqualToString:@"articles"])
     {
-        int count = itemsCount;
+        NSUInteger count = itemsCount;
         if (offset + count > [[defaultValues valueForKey:tagName] count])
         {
             count = [[defaultValues valueForKey:tagName] count] - offset;
