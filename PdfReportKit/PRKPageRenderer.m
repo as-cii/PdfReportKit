@@ -47,7 +47,7 @@
 {
     [self prepareForDrawingPages:NSMakeRange(0, 1)];
     
-    int pages = [self numberOfPages];
+    NSInteger pages = [self numberOfPages];
     for (int i = 0; i < pages; i++)
     {
         UIGraphicsBeginPDFPage();

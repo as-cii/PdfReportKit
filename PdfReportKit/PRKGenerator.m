@@ -162,7 +162,7 @@ static NSArray * reportDefaultTags = nil;
         }
         else if ([tagName isEqualToString:@"pageNumber"])
         {
-            renderedTag = [NSString stringWithFormat:@"%d", pageNumber];
+            renderedTag = [NSString stringWithFormat:@"%lu", (unsigned long)pageNumber];
         }
         else
             renderedTag = [tag renderContentWithContext:context HTMLSafe:HTMLSafe error:error];
@@ -182,7 +182,7 @@ static NSArray * reportDefaultTags = nil;
     else if (sectionType == PRKSectionTypeFooter)
         footerFormatter = formatter;
     else
-        [NSException raise:@"Invalid Section Type" format:@"Section Type: %d is invalid", sectionType];
+        [NSException raise:@"Invalid Section Type" format:@"Section Type: %ld is invalid", sectionType];
 }
 
 - (void)renderPage
@@ -198,8 +198,8 @@ static NSArray * reportDefaultTags = nil;
     PRKFakeRenderer * footerFakeRenderer = [[PRKFakeRenderer alloc] init];
     [footerFakeRenderer addPrintFormatter:footerFormatter startingAtPageAtIndex:0];
     
-    int headerHeight = [headerFakeRenderer contentHeight];
-    int footerHeight = [footerFakeRenderer contentHeight];
+    NSUInteger headerHeight = [headerFakeRenderer contentHeight];
+    NSUInteger footerHeight = [footerFakeRenderer contentHeight];
     
     PRKPageRenderer * pageRenderer = [[PRKPageRenderer alloc] initWithHeaderFormatter:headerFormatter headerHeight:headerHeight andContentFormatter:contentFormatter andFooterFormatter:footerFormatter footerHeight:footerHeight];
     
