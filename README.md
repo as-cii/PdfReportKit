@@ -74,6 +74,19 @@ Then you must conform to `PRKGeneratorDataSource` and `PRKGeneratorDelegate` in 
 		// Report generated!!! Now we can use NSData as we want!
 	}
 
+## Specifying Images from the App Bundle or Documents Location
+Within the html template you can now specify if an image for the PDF is located in the App Bundle Path or Documents Location (i.e. an image downloaded by your app)
+
+To do this within your template use the following image prefixes:
+
+```html
+<img src="bundleimage://yourimage.png" />
+
+or 
+
+<img src="documentsimage://yourdownloadedimage.png" />
+```
+
 ## Result
 Here it is your wonderful report generated in few simple steps (you can skip all the steps above and see the result just by executing the example application provided)!
 ![Report](http://img706.imageshack.us/img706/6599/captureylw.png)

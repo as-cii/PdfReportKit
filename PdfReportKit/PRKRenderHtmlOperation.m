@@ -14,6 +14,7 @@
 
 #import "PRKRenderHtmlOperation.h"
 #import "PRKGenerator.h"
+#import "NSURLWebViewProtocol.h"
 
 @implementation PRKRenderHtmlOperation
 
@@ -27,6 +28,9 @@
         
         renderingWebView = [[UIWebView alloc] init];
         renderingWebView.delegate = self;
+        
+        // Register the custom NSURL WebView Protocol
+        [NSURLWebViewProtocol registerClass:[NSURLWebViewProtocol class]];
     }
     
     return self;
